@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordly - Python Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            color: #333;
+            margin-top: 50px;
+        }
+        input {
+            padding: 10px;
+            font-size: 18px;
+            margin: 10px;
+            width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Wordly</h1>
+    <p>Guess the word by choosing a word length and making guesses!</p>
+
+    <label for="word-length">Choose word length:</label>
+    <select id="word-length">
+        <option value="4">4 letters</option>
+        <option value="5">5 letters</option>
+        <option value="6">6 letters</option>
+    </select>
+
+    <div>
+        <input type="text" id="guess" placeholder="Enter your guess">
+        <button onclick="makeGuess()">Submit Guess</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        function makeGuess() {
+            const wordLength = document.getElementById('word-length').value;
+            const guess = document.getElementById('guess').value;
+
+            fetch('/play', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    word_length: wordLength,
+                    guess: guess
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerText = data.message;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
