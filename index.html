@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wordly - Python Game</title>
+    <title>Wordly - Browser Game</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -33,6 +33,10 @@
             margin-top: 20px;
             font-size: 20px;
         }
+        .word-feedback {
+            font-size: 24px;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -54,28 +58,82 @@
     <div id="result"></div>
 
     <script>
-        function makeGuess() {
-            const wordLength = document.getElementById('word-length').value;
-            const guess = document.getElementById('guess').value;
+        // Hardcoded word lists for different lengths
+        const wordList4 = ['tree', 'code', 'game', 'play', 'word'];
+        const wordList5 = ['apple', 'bread', 'table', 'plane', 'water'];
+        const wordList6 = ['planet', 'system', 'rocket', 'people', 'butter'];
 
-            fetch('/play', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    word_length: wordLength,
-                    guess: guess
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('result').innerText = data.message;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+        let secretWord = '';
+        let attempts = 6; // Limit attempts to 6
+
+        // Function to pick a random word based on word length
+        function pickWord(wordLength) {
+            if (wordLength == 4) {
+                return wordList4[Math.floor(Math.random() * wordList4.length)];
+            } else if (wordLength == 5) {
+                return wordList5[Math.floor(Math.random() * wordList5.length)];
+            } else if (wordLength == 6) {
+                return wordList6[Math.floor(Math.random() * wordList6.length)];
+            }
         }
+
+        // Function to start the game by picking a word
+        function startGame() {
+            const wordLength = document.getElementById('word-length').value;
+            secretWord = pickWord(wordLength);
+            attempts = 6;
+            document.getElementById('result').innerHTML = `You have ${attempts} attempts to guess a ${wordLength}-letter word.`;
+        }
+
+        // Function to compare the guess and give feedback
+        function compareWords(secretWord, guess) {
+            let result = '';
+            for (let i = 0; i < secretWord.length; i++) {
+                if (guess[i] === secretWord[i]) {
+                    result += `[${guess[i]}]`;  // Correct letter in correct position
+                } else if (secretWord.includes(guess[i])) {
+                    result += `(${guess[i]})`;  // Correct letter in wrong position
+                } else {
+                    result += guess[i];  // Incorrect letter
+                }
+            }
+            return result;
+        }
+
+        // Function to handle the player's guess
+        function makeGuess() {
+            const guess = document.getElementById('guess').value.toLowerCase();
+            const wordLength = document.getElementById('word-length').value;
+
+            if (guess.length !== parseInt(wordLength)) {
+                document.getElementById('result').innerHTML = `Please enter a ${wordLength}-letter word.`;
+                return;
+            }
+
+            // Check if the player's guess matches the secret word
+            if (guess === secretWord) {
+                document.getElementById('result').innerHTML = `Congratulations! You've guessed the word "${secretWord}" correctly!`;
+                secretWord = '';  // Reset the secret word for the next game
+            } else {
+                attempts--;
+                if (attempts > 0) {
+                    const feedback = compareWords(secretWord, guess);
+                    document.getElementById('result').innerHTML = `
+                        Result: ${feedback} <br>
+                        You have ${attempts} attempts remaining.
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `Game over! The word was "${secretWord}".`;
+                    secretWord = '';  // Reset the secret word for the next game
+                }
+            }
+
+            // Clear the input field for the next guess
+            document.getElementById('guess').value = '';
+        }
+
+        // Start a new game on page load
+        window.onload = startGame;
     </script>
 </body>
 </html>
